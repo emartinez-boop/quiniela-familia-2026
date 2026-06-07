@@ -3523,7 +3523,8 @@ async function saveQuiniela(){
     if(pwd.length < 4){ toast('⚠️ La contraseña debe tener al menos 4 caracteres'); return; }
     if(pwd !== pwd2)  { toast('⚠️ Las contraseñas no coinciden'); return; }
     const hashed = await hashPwd(pwd);
-    p = {id:`u${Date.now()}`,name,pts:0,exact:0,correct:0,pwd_hash:hashed};
+    const newId = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);});
+    p = {id:newId,name,pts:0,exact:0,correct:0,pwd_hash:hashed};
     participants.push(p);
   }
 
