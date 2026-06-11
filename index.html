@@ -3441,8 +3441,8 @@ function updateRegUI(){
     const btn=document.getElementById('btn-reg');
     if(btn){btn.disabled=true;btn.textContent='🔒 Registro Cerrado';}
     // Hide gate too
-    document.getElementById('email-gate').style.display='none';
-    document.getElementById('reg-fields').style.display='none';
+    if(!currentEmail){ document.getElementById('email-gate').style.display='block';
+    document.getElementById('reg-fields').style.display='none'; }
   }
 }
 
