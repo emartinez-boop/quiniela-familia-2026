@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Predicciones · Quiniela Familia Martínez 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#D4A017;--bg:#060610;--s2:#111120;--s3:#181828;
+  --brd:rgba(212,160,23,.15);--txt:#E4DCC8;--muted:#7070A0;--dim:#404060;
+  --green:#22C55E;--red:#EF4444;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--txt);font-family:'Barlow',sans-serif;padding:20px;}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,48px);letter-spacing:3px;color:var(--gold);text-align:center;margin-bottom:4px;}
+.sub{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:24px;}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;justify-content:center;}
+.filt{background:var(--s2);border:1px solid var(--brd);border-radius:20px;padding:5px 14px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all .18s;}
+.filt.on,.filt:hover{border-color:var(--gold);color:var(--gold);}
+.search-wrap{display:flex;justify-content:center;margin-bottom:20px;}
+.search-inp{background:var(--s2);border:1px solid var(--brd);border-radius:6px;padding:8px 14px;color:var(--txt);font-family:'Barlow Condensed',sans-serif;font-size:13px;outline:none;width:100%;max-width:300px;transition:border-color .18s;}
+.search-inp:focus{border-color:var(--gold);}
+.search-inp::placeholder{color:var(--dim);}
+.match-block{margin-bottom:24px;}
+.match-header{background:linear-gradient(135deg,var(--s2),rgba(212,160,23,.06));border:1px solid var(--brd);border-left:3px solid var(--gold);border-radius:4px 4px 0 0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.match-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#fff;}
+.match-meta{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--muted);letter-spacing:1px;}
+.match-result{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);letter-spacing:2px;}
+.preds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));border:1px solid var(--brd);border-top:none;border-radius:0 0 4px 4px;overflow:hidden;}
+.pred-cell{padding:8px 12px;border-right:1px solid var(--brd);border-bottom:1px solid var(--brd);display:flex;flex-direction:column;gap:2px;}
+.pred-name{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--muted);letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pred-score{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--txt);letter-spacing:2px;}
+.pred-score.exact{color:var(--green);}
+.pred-score.correct{color:var(--gold);}
+.pred-score.wrong{color:var(--red);}
+.pred-chip{font-size:8px;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+.pred-chip.exact{color:var(--green);}
+.pred-chip.correct{color:var(--gold);}
+.pred-chip.wrong{color:var(--red);}
+.legend{display:flex;gap:16px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px;}
+.leg-dot{width:10px;height:10px;border-radius:2px;}
+.loader{text-align:center;padding:40px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:2px;font-size:13px;}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--brd);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;margin-right:8px;vertical-align:middle;}
+@keyframes sp{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<h1>⚽ Predicciones · Familia Martínez</h1>
+<div class="sub">Quiniela Mundial 2026 · Fase de Grupos</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Exacto +3</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--gold)"></div>Correcto +1</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Incorrecto +0</div>
+</div>
+
+<div class="filters">
+  <div class="filt on" onclick="setFilter('all',this)">Todos</div>
+  <div class="filt" onclick="setFilter('A',this)">Grupo A</div>
+  <div class="filt" onclick="setFilter('B',this)">Grupo B</div>
+  <div class="filt" onclick="setFilter('C',this)">Grupo C</div>
+  <div class="filt" onclick="setFilter('D',this)">Grupo D</div>
+  <div class="filt" onclick="setFilter('E',this)">Grupo E</div>
+  <div class="filt" onclick="setFilter('F',this)">Grupo F</div>
+  <div class="filt" onclick="setFilter('G',this)">Grupo G</div>
+  <div class="filt" onclick="setFilter('H',this)">Grupo H</div>
+  <div class="filt" onclick="setFilter('I',this)">Grupo I</div>
+  <div class="filt" onclick="setFilter('J',this)">Grupo J</div>
+  <div class="filt" onclick="setFilter('K',this)">Grupo K</div>
+  <div class="filt" onclick="setFilter('L',this)">Grupo L</div>
+</div>
+
+<div class="search-wrap">
+  <input class="search-inp" type="text" placeholder="Buscar equipo o participante…" oninput="search(this.value)"/>
+</div>
+
+<div id="container"><div class="loader"><span class="spin"></span>Cargando predicciones…</div></div>
+
+<script>
+const SB_URL = 'https://pjzctcmfsuvddzonnbng.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqemN0Y21mc3V2ZGR6b25uYm5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNDI0NTYsImV4cCI6MjA2MzYxODQ1Nn0.TSriPUPDUrZdLBZbhu__Jj5Pln3NJYJm6H06SIbQSXI';
+const HDRS = {'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`};
+
+const MATCHES = [
+  {id:1,group:'A',home:'México',away:'Sudáfrica',date:'11 Jun',fh:'🇲🇽',fa:'🇿🇦'},
+  {id:2,group:'A',home:'Corea del Sur',away:'Rep. Checa',date:'11 Jun',fh:'🇰🇷',fa:'🇨🇿'},
+  {id:3,group:'A',home:'México',away:'Rep. Checa',date:'15 Jun',fh:'🇲🇽',fa:'🇨🇿'},
+  {id:4,group:'A',home:'Corea del Sur',away:'Sudáfrica',date:'15 Jun',fh:'🇰🇷',fa:'🇿🇦'},
+  {id:5,group:'A',home:'México',away:'Corea del Sur',date:'19 Jun',fh:'🇲🇽',fa:'🇰🇷'},
+  {id:6,group:'A',home:'Sudáfrica',away:'Rep. Checa',date:'19 Jun',fh:'🇿🇦',fa:'🇨🇿'},
+  {id:7,group:'B',home:'Canadá',away:'Bosnia y Herz.',date:'12 Jun',fh:'🇨🇦',fa:'🇧🇦'},
+  {id:8,group:'B',home:'Catar',away:'Suiza',date:'13 Jun',fh:'🇶🇦',fa:'🇨🇭'},
+  {id:9,group:'B',home:'Canadá',away:'Catar',date:'18 Jun',fh:'🇨🇦',fa:'🇶🇦'},
+  {id:10,group:'B',home:'Suiza',away:'Bosnia y Herz.',date:'18 Jun',fh:'🇨🇭',fa:'🇧🇦'},
+  {id:11,group:'B',home:'Bosnia y Herz.',away:'Catar',date:'24 Jun',fh:'🇧🇦',fa:'🇶🇦'},
+  {id:12,group:'B',home:'Suiza',away:'Canadá',date:'24 Jun',fh:'🇨🇭',fa:'🇨🇦'},
+  {id:13,group:'C',home:'Brasil',away:'Marruecos',date:'13 Jun',fh:'🇧🇷',fa:'🇲🇦'},
+  {id:14,group:'C',home:'Haití',away:'Escocia',date:'13 Jun',fh:'🇭🇹',fa:'🏴󠁧󠁢󠁳󠁣󠁴󠁿'},
+  {id:15,group:'C',home:'Brasil',away:'Haití',date:'19 Jun',fh:'🇧🇷',fa:'🇭🇹'},
+  {id:16,group:'C',home:'Escocia',away:'Marruecos',date:'19 Jun',fh:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',fa:'🇲🇦'},
+  {id:17,group:'C',home:'Brasil',away:'Escocia',date:'25 Jun',fh:'🇧🇷',fa:'🏴󠁧󠁢󠁳󠁣󠁴󠁿'},
+  {id:18,group:'C',home:'Marruecos',away:'Haití',date:'25 Jun',fh:'🇲🇦',fa:'🇭🇹'},
+  {id:19,group:'D',home:'Francia',away:'Senegal',date:'16 Jun',fh:'🇫🇷',fa:'🇸🇳'},
+  {id:20,group:'D',home:'Colombia',away:'Países Bajos',date:'13 Jun',fh:'🇨🇴',fa:'🇳🇱'},
+  {id:21,group:'D',home:'Francia',away:'Países Bajos',date:'21 Jun',fh:'🇫🇷',fa:'🇳🇱'},
+  {id:22,group:'D',home:'Colombia',away:'Senegal',date:'17 Jun',fh:'🇨🇴',fa:'🇸🇳'},
+  {id:23,group:'D',home:'Francia',away:'Colombia',date:'27 Jun',fh:'🇫🇷',fa:'🇨🇴'},
+  {id:24,group:'D',home:'Senegal',away:'Países Bajos',date:'27 Jun',fh:'🇸🇳',fa:'🇳🇱'},
+  {id:25,group:'E',home:'Alemania',away:'Curazao',date:'14 Jun',fh:'🇩🇪',fa:'🇨🇼'},
+  {id:26,group:'E',home:'Costa de Marfil',away:'Ecuador',date:'14 Jun',fh:'🇨🇮',fa:'🇪🇨'},
+  {id:27,group:'E',home:'Alemania',away:'Costa de Marfil',date:'20 Jun',fh:'🇩🇪',fa:'🇨🇮'},
+  {id:28,group:'E',home:'Ecuador',away:'Curazao',date:'20 Jun',fh:'🇪🇨',fa:'🇨🇼'},
+  {id:29,group:'E',home:'Alemania',away:'Ecuador',date:'26 Jun',fh:'🇩🇪',fa:'🇪🇨'},
+  {id:30,group:'E',home:'Costa de Marfil',away:'Curazao',date:'26 Jun',fh:'🇨🇮',fa:'🇨🇼'},
+  {id:31,group:'F',home:'Bélgica',away:'Egipto',date:'15 Jun',fh:'🇧🇪',fa:'🇪🇬'},
+  {id:32,group:'F',home:'Países Bajos',away:'Japón',date:'14 Jun',fh:'🇳🇱',fa:'🇯🇵'},
+  {id:33,group:'F',home:'Bélgica',away:'Irán',date:'21 Jun',fh:'🇧🇪',fa:'🇮🇷'},
+  {id:34,group:'F',home:'EE.UU.',away:'Australia',date:'19 Jun',fh:'🇺🇸',fa:'🇦🇺'},
+  {id:35,group:'F',home:'Bélgica',away:'Nueva Zelanda',date:'27 Jun',fh:'🇧🇪',fa:'🇳🇿'},
+  {id:36,group:'F',home:'Irán',away:'Egipto',date:'27 Jun',fh:'🇮🇷',fa:'🇪🇬'},
+  {id:37,group:'G',home:'España',away:'Cabo Verde',date:'15 Jun',fh:'🇪🇸',fa:'🇨🇻'},
+  {id:38,group:'G',home:'Arabia Saudí',away:'Uruguay',date:'15 Jun',fh:'🇸🇦',fa:'🇺🇾'},
+  {id:39,group:'G',home:'España',away:'Arabia Saudí',date:'21 Jun',fh:'🇪🇸',fa:'🇸🇦'},
+  {id:40,group:'G',home:'Uruguay',away:'Cabo Verde',date:'21 Jun',fh:'🇺🇾',fa:'🇨🇻'},
+  {id:41,group:'G',home:'España',away:'Uruguay',date:'27 Jun',fh:'🇪🇸',fa:'🇺🇾'},
+  {id:42,group:'G',home:'Cabo Verde',away:'Arabia Saudí',date:'27 Jun',fh:'🇨🇻',fa:'🇸🇦'},
+  {id:43,group:'H',home:'Italia',away:'Ecuador',date:'15 Jun',fh:'🇮🇹',fa:'🇪🇨'},
+  {id:44,group:'H',home:'Uruguay',away:'Eslovaquia',date:'15 Jun',fh:'🇺🇾',fa:'🇸🇰'},
+  {id:45,group:'H',home:'Italia',away:'Eslovaquia',date:'19 Jun',fh:'🇮🇹',fa:'🇸🇰'},
+  {id:46,group:'H',home:'Uruguay',away:'Ecuador',date:'19 Jun',fh:'🇺🇾',fa:'🇪🇨'},
+  {id:47,group:'H',home:'Italia',away:'Uruguay',date:'23 Jun',fh:'🇮🇹',fa:'🇺🇾'},
+  {id:48,group:'H',home:'Ecuador',away:'Eslovaquia',date:'23 Jun',fh:'🇪🇨',fa:'🇸🇰'},
+  {id:49,group:'I',home:'Croacia',away:'Dinamarca',date:'15 Jun',fh:'🇭🇷',fa:'🇩🇰'},
+  {id:50,group:'I',home:'Chile',away:'Irán',date:'15 Jun',fh:'🇨🇱',fa:'🇮🇷'},
+  {id:51,group:'I',home:'Croacia',away:'Irán',date:'19 Jun',fh:'🇭🇷',fa:'🇮🇷'},
+  {id:52,group:'I',home:'Chile',away:'Dinamarca',date:'19 Jun',fh:'🇨🇱',fa:'🇩🇰'},
+  {id:53,group:'I',home:'Croacia',away:'Chile',date:'23 Jun',fh:'🇭🇷',fa:'🇨🇱'},
+  {id:54,group:'I',home:'Dinamarca',away:'Irán',date:'23 Jun',fh:'🇩🇰',fa:'🇮🇷'},
+  {id:55,group:'J',home:'Suiza',away:'Guinea',date:'16 Jun',fh:'🇨🇭',fa:'🇬🇳'},
+  {id:56,group:'J',home:'Costa Rica',away:'Hungría',date:'16 Jun',fh:'🇨🇷',fa:'🇭🇺'},
+  {id:57,group:'J',home:'Suiza',away:'Hungría',date:'20 Jun',fh:'🇨🇭',fa:'🇭🇺'},
+  {id:58,group:'J',home:'Costa Rica',away:'Guinea',date:'20 Jun',fh:'🇨🇷',fa:'🇬🇳'},
+  {id:59,group:'J',home:'Suiza',away:'Costa Rica',date:'24 Jun',fh:'🇨🇭',fa:'🇨🇷'},
+  {id:60,group:'J',home:'Guinea',away:'Hungría',date:'24 Jun',fh:'🇬🇳',fa:'🇭🇺'},
+  {id:61,group:'K',home:'Portugal',away:'RD Congo',date:'17 Jun',fh:'🇵🇹',fa:'🇨🇩'},
+  {id:62,group:'K',home:'Uzbekistán',away:'Colombia',date:'17 Jun',fh:'🇺🇿',fa:'🇨🇴'},
+  {id:63,group:'K',home:'Portugal',away:'Uzbekistán',date:'23 Jun',fh:'🇵🇹',fa:'🇺🇿'},
+  {id:64,group:'K',home:'Colombia',away:'RD Congo',date:'23 Jun',fh:'🇨🇴',fa:'🇨🇩'},
+  {id:65,group:'K',home:'Colombia',away:'Portugal',date:'27 Jun',fh:'🇨🇴',fa:'🇵🇹'},
+  {id:66,group:'K',home:'RD Congo',away:'Uzbekistán',date:'27 Jun',fh:'🇨🇩',fa:'🇺🇿'},
+  {id:67,group:'L',home:'Inglaterra',away:'Croacia',date:'17 Jun',fh:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',fa:'🇭🇷'},
+  {id:68,group:'L',home:'Ghana',away:'Panamá',date:'17 Jun',fh:'🇬🇭',fa:'🇵🇦'},
+  {id:69,group:'L',home:'Turquía',away:'Rusia',date:'21 Jun',fh:'🇹🇷',fa:'🇷🇺'},
+  {id:70,group:'L',home:'Nigeria',away:'Cuba',date:'21 Jun',fh:'🇳🇬',fa:'🇨🇺'},
+  {id:71,group:'L',home:'Turquía',away:'Nigeria',date:'25 Jun',fh:'🇹🇷',fa:'🇳🇬'},
+  {id:72,group:'L',home:'Cuba',away:'Rusia',date:'25 Jun',fh:'🇨🇺',fa:'🇷🇺'},
+];
+
+let SCORES = {};
+let PREDS = {};
+let NAMES = {};
+let activeFilter = 'all';
+let searchQ = '';
+
+function getRes(h,a){ return h>a?'H':h<a?'A':'D'; }
+
+function getPtsClass(h, a, score){
+  if(!score) return '';
+  if(h===score.h && a===score.a) return 'exact';
+  if(getRes(h,a)===getRes(score.h,score.a)) return 'correct';
+  return 'wrong';
+}
+
+function getPtsLabel(cls){
+  if(cls==='exact') return '+3 ✓✓';
+  if(cls==='correct') return '+1 ✓';
+  if(cls==='wrong') return '+0';
+  return '';
+}
+
+async function loadData(){
+  try{
+    // Load scores
+    const sr = await fetch(`${SB_URL}/rest/v1/scores?select=match_id,home_score,away_score`, {headers: HDRS});
+    const scores = await sr.json();
+    scores.forEach(s => SCORES[s.match_id] = {h: s.home_score, a: s.away_score});
+
+    // Load participants
+    const pr = await fetch(`${SB_URL}/rest/v1/participants?select=id,name&registered=not.is.null`, {headers: HDRS});
+    const parts = await pr.json();
+    parts.forEach(p => NAMES[p.id] = p.name);
+
+    // Load all predictions with pagination
+    let allPreds = [], offset = 0;
+    while(true){
+      const r = await fetch(
+        `${SB_URL}/rest/v1/predictions?select=participant_id,match_id,home_score,away_score&limit=1000&offset=${offset}`,
+        {headers: HDRS}
+      );
+      const page = await r.json();
+      allPreds = allPreds.concat(page);
+      if(page.length < 1000) break;
+      offset += 1000;
+    }
+
+    allPreds.forEach(row => {
+      const name = NAMES[row.participant_id];
+      if(!name) return;
+      if(!PREDS[row.match_id]) PREDS[row.match_id] = [];
+      PREDS[row.match_id].push({name, h: row.home_score, a: row.away_score});
+    });
+
+    // Sort each match predictions by name
+    Object.values(PREDS).forEach(arr => arr.sort((a,b) => a.name.localeCompare(b.name)));
+
+    render();
+  } catch(e){
+    document.getElementById('container').innerHTML =
+      `<div class="loader">❌ Error cargando datos: ${e.message}</div>`;
+  }
+}
+
+function setFilter(f, btn){
+  activeFilter = f;
+  document.querySelectorAll('.filt').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+
+function search(v){
+  searchQ = v.toLowerCase().trim();
+  render();
+}
+
+function render(){
+  const container = document.getElementById('container');
+  let matches = MATCHES;
+  if(activeFilter !== 'all') matches = matches.filter(m => m.group === activeFilter);
+  if(searchQ) matches = matches.filter(m =>
+    m.home.toLowerCase().includes(searchQ) ||
+    m.away.toLowerCase().includes(searchQ) ||
+    (PREDS[m.id]||[]).some(p => p.name.toLowerCase().includes(searchQ))
+  );
+
+  if(!matches.length){
+    container.innerHTML = '<div class="loader">Sin partidos en esta categoría</div>';
+    return;
+  }
+
+  container.innerHTML = matches.map(m => {
+    const preds = PREDS[m.id] || [];
+    const score = SCORES[m.id];
+    const scoreStr = score ? `${score.h} – ${score.a} 🔒` : 'Pendiente';
+
+    const cells = preds.map(p => {
+      const cls = getPtsClass(p.h, p.a, score);
+      const lbl = getPtsLabel(cls);
+      return `<div class="pred-cell">
+        <div class="pred-name">${p.name}</div>
+        <div class="pred-score ${cls}">${p.h} – ${p.a}</div>
+        ${cls ? `<div class="pred-chip ${cls}">${lbl}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    return `<div class="match-block">
+      <div class="match-header">
+        <div>
+          <div class="match-title">${m.fh} ${m.home} vs ${m.away} ${m.fa}</div>
+          <div class="match-meta">Grupo ${m.group} · ${m.date}</div>
+        </div>
+        <div class="match-result">${scoreStr}</div>
+      </div>
+      <div class="preds-grid">${cells || '<div class="pred-cell"><div class="pred-name" style="color:var(--dim)">Sin predicciones</div></div>'}</div>
+    </div>`;
+  }).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>
