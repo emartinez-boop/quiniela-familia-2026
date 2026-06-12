@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --gold:#D4A017;--bg:#060610;--s2:#111120;--s3:#181828;
+  --gold:#D4A017;--bg:#060610;--s2:#111120;
   --brd:rgba(212,160,23,.15);--txt:#E4DCC8;--muted:#7070A0;--dim:#404060;
   --green:#22C55E;--red:#EF4444;
 }
@@ -82,7 +82,7 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,48px);letter-spa
 <script>
 const SB_URL = 'https://pjzctcmfsuvddzonnbng.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqemN0Y21mc3V2ZGR6b25uYm5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNDI0NTYsImV4cCI6MjA2MzYxODQ1Nn0.TSriPUPDUrZdLBZbhu__Jj5Pln3NJYJm6H06SIbQSXI';
-const HDRS = {'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`};
+const HDRS = {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY};
 
 const MATCHES = [
   {id:1,group:'A',home:'México',away:'Sudáfrica',date:'11 Jun',fh:'🇲🇽',fa:'🇿🇦'},
@@ -168,9 +168,9 @@ let searchQ = '';
 function getRes(h,a){ return h>a?'H':h<a?'A':'D'; }
 
 function getPtsClass(h, a, score){
-  if(!score) return '';
-  if(h===score.h && a===score.a) return 'exact';
-  if(getRes(h,a)===getRes(score.h,score.a)) return 'correct';
+  if(score == null) return '';
+  if(h === score.h && a === score.a) return 'exact';
+  if(getRes(h,a) === getRes(score.h, score.a)) return 'correct';
   return 'wrong';
 }
 
@@ -181,26 +181,26 @@ function getPtsLabel(cls){
   return '';
 }
 
+async function sbFetch(path){
+  const r = await fetch(SB_URL + '/rest/v1/' + path, {headers: HDRS});
+  const data = await r.json();
+  return Array.isArray(data) ? data : (data.data || []);
+}
+
 async function loadData(){
   try{
-    // Load scores
-    const sr = await fetch(`${SB_URL}/rest/v1/scores?select=match_id,home_score,away_score`, {headers: HDRS});
-    const scores = await sr.json();
-    scores.forEach(s => SCORES[s.match_id] = {h: s.home_score, a: s.away_score});
+    // Scores
+    const scores = await sbFetch('scores?select=match_id,home_score,away_score');
+    scores.forEach(s => { SCORES[s.match_id] = {h: s.home_score, a: s.away_score}; });
 
-    // Load participants
-    const pr = await fetch(`${SB_URL}/rest/v1/participants?select=id,name&registered=not.is.null`, {headers: HDRS});
-    const parts = await pr.json();
-    parts.forEach(p => NAMES[p.id] = p.name);
+    // Participants
+    const parts = await sbFetch('participants?select=id,name&registered=not.is.null');
+    parts.forEach(p => { NAMES[p.id] = p.name; });
 
-    // Load all predictions with pagination
+    // Predictions with pagination
     let allPreds = [], offset = 0;
     while(true){
-      const r = await fetch(
-        `${SB_URL}/rest/v1/predictions?select=participant_id,match_id,home_score,away_score&limit=1000&offset=${offset}`,
-        {headers: HDRS}
-      );
-      const page = await r.json();
+      const page = await sbFetch('predictions?select=participant_id,match_id,home_score,away_score&limit=1000&offset=' + offset);
       allPreds = allPreds.concat(page);
       if(page.length < 1000) break;
       offset += 1000;
@@ -213,13 +213,12 @@ async function loadData(){
       PREDS[row.match_id].push({name, h: row.home_score, a: row.away_score});
     });
 
-    // Sort each match predictions by name
     Object.values(PREDS).forEach(arr => arr.sort((a,b) => a.name.localeCompare(b.name)));
 
     render();
   } catch(e){
     document.getElementById('container').innerHTML =
-      `<div class="loader">❌ Error cargando datos: ${e.message}</div>`;
+      '<div class="loader">❌ Error cargando datos: ' + e.message + '</div>';
   }
 }
 
@@ -252,29 +251,29 @@ function render(){
 
   container.innerHTML = matches.map(m => {
     const preds = PREDS[m.id] || [];
-    const score = SCORES[m.id];
-    const scoreStr = score ? `${score.h} – ${score.a} 🔒` : 'Pendiente';
+    const score = SCORES[m.id] != null ? SCORES[m.id] : null;
+    const scoreStr = score ? score.h + ' – ' + score.a + ' 🔒' : 'Pendiente';
 
     const cells = preds.map(p => {
       const cls = getPtsClass(p.h, p.a, score);
       const lbl = getPtsLabel(cls);
-      return `<div class="pred-cell">
-        <div class="pred-name">${p.name}</div>
-        <div class="pred-score ${cls}">${p.h} – ${p.a}</div>
-        ${cls ? `<div class="pred-chip ${cls}">${lbl}</div>` : ''}
-      </div>`;
+      return '<div class="pred-cell">' +
+        '<div class="pred-name">' + p.name + '</div>' +
+        '<div class="pred-score ' + cls + '">' + p.h + ' – ' + p.a + '</div>' +
+        (cls ? '<div class="pred-chip ' + cls + '">' + lbl + '</div>' : '') +
+        '</div>';
     }).join('');
 
-    return `<div class="match-block">
-      <div class="match-header">
-        <div>
-          <div class="match-title">${m.fh} ${m.home} vs ${m.away} ${m.fa}</div>
-          <div class="match-meta">Grupo ${m.group} · ${m.date}</div>
-        </div>
-        <div class="match-result">${scoreStr}</div>
-      </div>
-      <div class="preds-grid">${cells || '<div class="pred-cell"><div class="pred-name" style="color:var(--dim)">Sin predicciones</div></div>'}</div>
-    </div>`;
+    return '<div class="match-block">' +
+      '<div class="match-header">' +
+        '<div>' +
+          '<div class="match-title">' + m.fh + ' ' + m.home + ' vs ' + m.away + ' ' + m.fa + '</div>' +
+          '<div class="match-meta">Grupo ' + m.group + ' · ' + m.date + '</div>' +
+        '</div>' +
+        '<div class="match-result">' + scoreStr + '</div>' +
+      '</div>' +
+      '<div class="preds-grid">' + (cells || '<div class="pred-cell"><div class="pred-name" style="color:var(--dim)">Sin predicciones</div></div>') + '</div>' +
+    '</div>';
   }).join('');
 }
 
