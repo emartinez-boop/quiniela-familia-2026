@@ -805,7 +805,7 @@ body::after{content:'';position:fixed;inset:0;background:url("data:image/svg+xml
 <div id="panel-partidos" class="panel">
   <div style="background:rgba(212,160,23,.07);border:1px solid var(--brd);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
     <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--muted);letter-spacing:.5px;flex:1;">
-      ⚡ Resultados oficiales automáticos vía <strong style="color:var(--gold)">API-Football</strong> · Se actualizan cada 10 minutos · 🔒 Bloqueados al llegar
+      📋 Resultados ingresados manualmente por la administración · 🔒 Bloqueados al llegar
     </span>
   </div>
   <div class="fbar">
@@ -4136,9 +4136,7 @@ async function init(){
   // Rebuild carousel daily
   setInterval(()=>{ renderCarousel(); renderDayStrip(); }, 60000);
 
-  // Fetch official scores on load, then every 10 minutes (Free plan: 100 req/day)
-  await fetchRecentScores();
-  setInterval(fetchOfficialScores, 10 * 60 * 1000);
+  // Familia no usa API-Football — resultados se ingresan manualmente vía admin
 
   // Show welcome modal on first visit (only after auth)
   if(authed && !sessionStorage.getItem('wm-seen') && !isDeadlinePassed()){
