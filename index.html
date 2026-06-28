@@ -1393,22 +1393,22 @@ function buildMatches(){
     //         D=USA,PRY,AUS,TUR  E=GER,CUW,CIV,ECU  F=NED,JPN,SWE,TUN
     //         G=BEL,EGY,IRN,NZL  H=ESP,CPV,KSA,URU  I=FRA,SEN,IRQ,NOR
     //         J=ARG,ALG,AUT,JOR  K=POR,COD,UZB,COL  L=ENG,CRO,GHA,PAN
-    {stage:'R32',label:'16avos 1', home:'1° Grupo A',away:'3° (C/E/F/H/I)',date:'28 Jun',venue:'Los Ángeles'},
-    {stage:'R32',label:'16avos 2', home:'1° Grupo E',away:'3° (A/B/C/D/F)',date:'29 Jun',venue:'Boston'},
-    {stage:'R32',label:'16avos 3', home:'2° Grupo A',away:'2° Grupo B',   date:'28 Jun',venue:'Los Ángeles'},
-    {stage:'R32',label:'16avos 4', home:'1° Grupo F',away:'2° Grupo C',   date:'30 Jun',venue:'Monterrey'},
-    {stage:'R32',label:'16avos 5', home:'2° Grupo K',away:'2° Grupo L',   date:'2 Jul', venue:'Toronto'},
-    {stage:'R32',label:'16avos 6', home:'1° Grupo H',away:'2° Grupo J',   date:'2 Jul', venue:'Los Ángeles'},
-    {stage:'R32',label:'16avos 7', home:'1° Grupo D',away:'3° (B/E/F/I/J)',date:'2 Jul',venue:'San Francisco'},
-    {stage:'R32',label:'16avos 8', home:'1° Grupo G',away:'3° (A/E/H/I/J)',date:'1 Jul',venue:'Seattle'},
-    {stage:'R32',label:'16avos 9', home:'1° Grupo C',away:'2° Grupo F',   date:'29 Jun',venue:'Houston'},
-    {stage:'R32',label:'16avos 10',home:'2° Grupo E',away:'2° Grupo I',   date:'30 Jun',venue:'Dallas'},
-    {stage:'R32',label:'16avos 11',home:'1° Grupo I',away:'3° (C/D/F/G/H)',date:'30 Jun',venue:'Nueva York'},
-    {stage:'R32',label:'16avos 12',home:'1° Grupo L',away:'3° (E/H/I/J/K)',date:'1 Jul', venue:'Atlanta'},
-    {stage:'R32',label:'16avos 13',home:'1° Grupo J',away:'2° Grupo H',   date:'3 Jul', venue:'Miami'},
-    {stage:'R32',label:'16avos 14',home:'2° Grupo D',away:'2° Grupo G',   date:'3 Jul', venue:'Kansas City'},
-    {stage:'R32',label:'16avos 15',home:'1° Grupo B',away:'3° (E/F/G/I/J)',date:'2 Jul',venue:'Vancouver'},
-    {stage:'R32',label:'16avos 16',home:'1° Grupo K',away:'3° (D/E/I/J/L)',date:'3 Jul',venue:'Kansas City'},
+    {stage:'R32',label:'16avos 1', home:'México',         away:'Ecuador',        date:'28 Jun',venue:'Ciudad de México'},
+    {stage:'R32',label:'16avos 2', home:'Alemania',        away:'Paraguay',       date:'29 Jun',venue:'Boston'},
+    {stage:'R32',label:'16avos 3', home:'Sudáfrica',       away:'Canadá',         date:'28 Jun',venue:'Los Ángeles'},
+    {stage:'R32',label:'16avos 4', home:'Países Bajos',    away:'Marruecos',      date:'30 Jun',venue:'Monterrey'},
+    {stage:'R32',label:'16avos 5', home:'Portugal',        away:'Croacia',        date:'2 Jul', venue:'Toronto'},
+    {stage:'R32',label:'16avos 6', home:'España',          away:'Austria',        date:'2 Jul', venue:'Los Ángeles'},
+    {stage:'R32',label:'16avos 7', home:'EE.UU.',          away:'Bosnia y Herz.', date:'1 Jul', venue:'San Francisco'},
+    {stage:'R32',label:'16avos 8', home:'Bélgica',         away:'Senegal',        date:'1 Jul', venue:'Seattle'},
+    {stage:'R32',label:'16avos 9', home:'Brasil',          away:'Japón',          date:'29 Jun',venue:'Houston'},
+    {stage:'R32',label:'16avos 10',home:'Costa de Marfil', away:'Noruega',        date:'30 Jun',venue:'Dallas'},
+    {stage:'R32',label:'16avos 11',home:'Francia',         away:'Suecia',         date:'30 Jun',venue:'Nueva York'},
+    {stage:'R32',label:'16avos 12',home:'Inglaterra',      away:'RD Congo',       date:'1 Jul', venue:'Atlanta'},
+    {stage:'R32',label:'16avos 13',home:'Argentina',       away:'Cabo Verde',     date:'3 Jul', venue:'Miami'},
+    {stage:'R32',label:'16avos 14',home:'Australia',       away:'Egipto',         date:'3 Jul', venue:'Dallas'},
+    {stage:'R32',label:'16avos 15',home:'Suiza',           away:'Argelia',        date:'2 Jul', venue:'Vancouver'},
+    {stage:'R32',label:'16avos 16',home:'Colombia',        away:'Ghana',          date:'3 Jul', venue:'Kansas City'},
     {stage:'R16',label:'Octavos 1',home:'Gan.16-1',away:'Gan.16-2',  date:'4 Jul', venue:'Filadelfia'},
     {stage:'R16',label:'Octavos 2',home:'Gan.16-3',away:'Gan.16-4',  date:'4 Jul', venue:'Houston'},
     {stage:'R16',label:'Octavos 3',home:'Gan.16-5',away:'Gan.16-6',  date:'5 Jul', venue:'Nueva York'},
@@ -2767,17 +2767,21 @@ function renderMatches(){
         // Pending — show time and inline prediction input
         const myUser = currentEmail ? participants.find(p=>p.email===currentEmail) : null;
         const myPred = myUser?.preds?.[m.id];
-        const isLocked = myUser?.predsLocked;
+        const faseLocked = isPhaseLocked(getFaseFromMatch(m));
 
         let predRow = '';
         if(currentEmail && myUser){
-          if(isLocked && myPred?.h!=null){
+          if(faseLocked && myPred?.h!=null){
             predRow = `<div class="mc-pred-row">
               <span class="mc-pred-label">Tu pred:</span>
               <span class="mc-pred-saved">${myPred.h} – ${myPred.a}</span>
               <span style="font-size:9px;color:var(--green);font-family:'Barlow Condensed',sans-serif;">🔒</span>
             </div>`;
-          } else if(!isLocked){
+          } else if(faseLocked && myPred?.h==null){
+            predRow = `<div class="mc-pred-row">
+              <span class="mc-pred-label" style="color:var(--muted);font-size:9px;">Sin predicción 🔒</span>
+            </div>`;
+          } else if(!faseLocked){
             predRow = `<div class="mc-pred-row">
               <span class="mc-pred-label">Tu pred:</span>
               <input class="mc-pred-inp" type="number" min="0" placeholder="0"
@@ -2838,11 +2842,12 @@ function renderMatches(){
 // Auto-save inline prediction when user changes input
 async function saveInlinePred(matchId){
   const myUser = currentEmail ? participants.find(p=>p.email===currentEmail) : null;
-  if(!myUser || myUser.predsLocked) return;
+  if(!myUser) return;
 
-  // ── Verificar bloqueo de fase ──
+  // ── Verificar bloqueo de fase (único control válido para eliminatorias) ──
   const match = MATCHES.find(m=>m.id===matchId);
-  if(match && !canSavePhase(getFaseFromMatch(match))) return;
+  if(!match) return;
+  if(!canSavePhase(getFaseFromMatch(match))){ toast('🔒 Esta fase ya cerró'); return; }
 
   if(!myUser.preds) myUser.preds = {};
 
@@ -4145,7 +4150,7 @@ async function init(){
 // ═══════════════════════════════════════════════════════
 const PHASE_LOCKS = {
   grupos: { label:'Fase de Grupos',              lockUTC: new Date(Date.UTC(2026,5,11,5,59)),  icon:'⚽', color:'#D4A017' },
-  r32:    { label:'Ronda de 32',                 lockUTC: new Date(Date.UTC(2026,5,28,19,0)),  icon:'🔥', color:'#22C55E' },
+  r32:    { label:'Ronda de 32',                 lockUTC: new Date(Date.UTC(2026,5,28,18,30)), icon:'🔥', color:'#22C55E' },
   r16:    { label:'Octavos de Final',            lockUTC: new Date(Date.UTC(2026,6,4,22,0)),   icon:'⚡', color:'#3B82F6' },
   qf:     { label:'Cuartos de Final',            lockUTC: new Date(Date.UTC(2026,6,9,21,0)),   icon:'🏅', color:'#8B5CF6' },
   sf:     { label:'Semifinales',                 lockUTC: new Date(Date.UTC(2026,6,14,20,0)),  icon:'🌟', color:'#F59E0B' },
