@@ -49,7 +49,7 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,48px);letter-spa
 <body>
 
 <h1>⚽ Predicciones · Familia Martínez</h1>
-<div class="sub">Quiniela Mundial 2026 · Fase de Grupos</div>
+<div class="sub">Quiniela Mundial 2026 · Grupos + Dieciseisavos</div>
 
 <div class="legend">
   <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Exacto +3</div>
@@ -59,6 +59,7 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,48px);letter-spa
 
 <div class="filters">
   <div class="filt on" onclick="setFilter('all',this)">Todos</div>
+  <div class="filt" onclick="setFilter('R32',this)">⚡ 16avos</div>
   <div class="filt" onclick="setFilter('A',this)">Grupo A</div>
   <div class="filt" onclick="setFilter('B',this)">Grupo B</div>
   <div class="filt" onclick="setFilter('C',this)">Grupo C</div>
@@ -156,7 +157,23 @@ const MATCHES = [
   {id:69,group:'K',home:'RD Congo',away:'Uzbekistán',date:'27 Jun',fh:'🇨🇩',fa:'🇺🇿'},
   {id:70,group:'K',home:'Colombia',away:'Portugal',date:'27 Jun',fh:'🇨🇴',fa:'🇵🇹'},
   {id:71,group:'L',home:'Panamá',away:'Croacia',date:'27 Jun',fh:'🇵🇦',fa:'🇭🇷'},
-  {id:72,group:'L',home:'Ghana',away:'Inglaterra',date:'27 Jun',fh:'🇬🇭',fa:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'}
+  {id:72,group:'L',home:'Ghana',away:'Inglaterra',date:'27 Jun',fh:'🇬🇭',fa:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+  {id:73,group:'R32',home:'México',away:'Ecuador',date:'28 Jun',fh:'🇲🇽',fa:'🇪🇨'},
+  {id:74,group:'R32',home:'Alemania',away:'Paraguay',date:'29 Jun',fh:'🇩🇪',fa:'🇵🇾'},
+  {id:75,group:'R32',home:'Sudáfrica',away:'Canadá',date:'28 Jun',fh:'🇿🇦',fa:'🇨🇦'},
+  {id:76,group:'R32',home:'Países Bajos',away:'Marruecos',date:'30 Jun',fh:'🇳🇱',fa:'🇲🇦'},
+  {id:77,group:'R32',home:'Portugal',away:'Croacia',date:'2 Jul',fh:'🇵🇹',fa:'🇭🇷'},
+  {id:78,group:'R32',home:'España',away:'Austria',date:'2 Jul',fh:'🇪🇸',fa:'🇦🇹'},
+  {id:79,group:'R32',home:'EE.UU.',away:'Bosnia y Herz.',date:'1 Jul',fh:'🇺🇸',fa:'🇧🇦'},
+  {id:80,group:'R32',home:'Bélgica',away:'Senegal',date:'1 Jul',fh:'🇧🇪',fa:'🇸🇳'},
+  {id:81,group:'R32',home:'Brasil',away:'Japón',date:'29 Jun',fh:'🇧🇷',fa:'🇯🇵'},
+  {id:82,group:'R32',home:'Costa de Marfil',away:'Noruega',date:'30 Jun',fh:'🇨🇮',fa:'🇳🇴'},
+  {id:83,group:'R32',home:'Francia',away:'Suecia',date:'30 Jun',fh:'🇫🇷',fa:'🇸🇪'},
+  {id:84,group:'R32',home:'Inglaterra',away:'RD Congo',date:'1 Jul',fh:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',fa:'🇨🇩'},
+  {id:85,group:'R32',home:'Argentina',away:'Cabo Verde',date:'3 Jul',fh:'🇦🇷',fa:'🇨🇻'},
+  {id:86,group:'R32',home:'Australia',away:'Egipto',date:'3 Jul',fh:'🇦🇺',fa:'🇪🇬'},
+  {id:87,group:'R32',home:'Suiza',away:'Argelia',date:'2 Jul',fh:'🇨🇭',fa:'🇩🇿'},
+  {id:88,group:'R32',home:'Colombia',away:'Ghana',date:'3 Jul',fh:'🇨🇴',fa:'🇬🇭'}
 ];
 
 let SCORES = {};
@@ -268,7 +285,7 @@ function render(){
       '<div class="match-header">' +
         '<div>' +
           '<div class="match-title">' + m.fh + ' ' + m.home + ' vs ' + m.away + ' ' + m.fa + '</div>' +
-          '<div class="match-meta">Grupo ' + m.group + ' · ' + m.date + '</div>' +
+          '<div class="match-meta">' + (m.group === 'R32' ? '⚡ 16avos de Final' : 'Grupo ' + m.group) + ' · ' + m.date + '</div>' +
         '</div>' +
         '<div class="match-result">' + scoreStr + '</div>' +
       '</div>' +
