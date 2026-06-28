@@ -805,7 +805,7 @@ body::after{content:'';position:fixed;inset:0;background:url("data:image/svg+xml
 <div id="panel-partidos" class="panel">
   <div style="background:rgba(212,160,23,.07);border:1px solid var(--brd);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
     <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--muted);letter-spacing:.5px;flex:1;">
-      📋 Resultados ingresados manualmente por la administración · 🔒 Bloqueados al llegar
+      ⚡ Resultados oficiales automáticos vía <strong style="color:var(--gold)">API-Football</strong> · Se actualizan cada 10 minutos · 🔒 Bloqueados al llegar
     </span>
   </div>
   <div class="fbar">
@@ -2399,11 +2399,9 @@ function resolveKnockout(){
 function calcPts(p){
   let pts=0,exact=0,correct=0;
   const preds=p.preds||{};
-  // Solo procesa partidos que tienen score confirmado en Supabase (match_id <= 72 = grupos)
-  MATCHES.forEach(m=>{
+  MATCHES.filter(m=>m.group).forEach(m=>{
     const sc=scores[m.id];
-    if(!sc||sc.h==null) return;           // sin resultado real → ignorar
-    if(m.id>72) return;                   // eliminatorias sin resultado confirmado → ignorar
+    if(!sc||sc.h==null) return;
     const pr=preds[m.id];
     if(!pr||pr.h==null) return;
     if(pr.h===sc.h&&pr.a===sc.a){pts+=3;exact++;}
@@ -2767,21 +2765,17 @@ function renderMatches(){
         // Pending — show time and inline prediction input
         const myUser = currentEmail ? participants.find(p=>p.email===currentEmail) : null;
         const myPred = myUser?.preds?.[m.id];
-        const faseLocked = isPhaseLocked(getFaseFromMatch(m));
+        const isLocked = myUser?.predsLocked;
 
         let predRow = '';
         if(currentEmail && myUser){
-          if(faseLocked && myPred?.h!=null){
+          if(isLocked && myPred?.h!=null){
             predRow = `<div class="mc-pred-row">
               <span class="mc-pred-label">Tu pred:</span>
               <span class="mc-pred-saved">${myPred.h} – ${myPred.a}</span>
               <span style="font-size:9px;color:var(--green);font-family:'Barlow Condensed',sans-serif;">🔒</span>
             </div>`;
-          } else if(faseLocked && myPred?.h==null){
-            predRow = `<div class="mc-pred-row">
-              <span class="mc-pred-label" style="color:var(--muted);font-size:9px;">Sin predicción 🔒</span>
-            </div>`;
-          } else if(!faseLocked){
+          } else if(!isLocked){
             predRow = `<div class="mc-pred-row">
               <span class="mc-pred-label">Tu pred:</span>
               <input class="mc-pred-inp" type="number" min="0" placeholder="0"
@@ -2842,12 +2836,11 @@ function renderMatches(){
 // Auto-save inline prediction when user changes input
 async function saveInlinePred(matchId){
   const myUser = currentEmail ? participants.find(p=>p.email===currentEmail) : null;
-  if(!myUser) return;
+  if(!myUser || myUser.predsLocked) return;
 
-  // ── Verificar bloqueo de fase (único control válido para eliminatorias) ──
+  // ── Verificar bloqueo de fase ──
   const match = MATCHES.find(m=>m.id===matchId);
-  if(!match) return;
-  if(!canSavePhase(getFaseFromMatch(match))){ toast('🔒 Esta fase ya cerró'); return; }
+  if(match && !canSavePhase(getFaseFromMatch(match))) return;
 
   if(!myUser.preds) myUser.preds = {};
 
@@ -4136,7 +4129,9 @@ async function init(){
   // Rebuild carousel daily
   setInterval(()=>{ renderCarousel(); renderDayStrip(); }, 60000);
 
-  // Familia no usa API-Football — resultados se ingresan manualmente vía admin
+  // Fetch official scores on load, then every 10 minutes (Free plan: 100 req/day)
+  await fetchRecentScores();
+  setInterval(fetchOfficialScores, 10 * 60 * 1000);
 
   // Show welcome modal on first visit (only after auth)
   if(authed && !sessionStorage.getItem('wm-seen') && !isDeadlinePassed()){
