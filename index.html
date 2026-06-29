@@ -1749,13 +1749,13 @@ const SB_HDRS = {
 // ── SCORES ──
 async function loadScores(){
   try{
-    const r = await fetch(`${SB_URL}/rest/v1/scores?select=match_id,home_score,away_score`, {
+    const r = await fetch(`${SB_URL}/rest/v1/scores?select=match_id,home_score,away_score,is_locked`, {
       headers: SB_HDRS
     });
     if(r.ok){
       const rows = await r.json();
       scores = {};
-      rows.forEach(row => scores[row.match_id] = {h: row.home_score, a: row.away_score});
+      rows.forEach(row => scores[row.match_id] = {h: row.home_score, a: row.away_score, locked: row.is_locked||false});
     }
   }catch(e){
     // fallback localStorage
@@ -1764,13 +1764,15 @@ async function loadScores(){
 }
 
 async function saveScores(){
-  // Save to Supabase — upsert all changed scores
+  // Save to Supabase — upsert all changed scores (skip locked)
   try{
-    const rows = Object.entries(scores).map(([id,sc])=>({
-      match_id: parseInt(id),
-      home_score: sc.h,
-      away_score: sc.a
-    }));
+    const rows = Object.entries(scores)
+      .filter(([id,sc])=>!sc.locked)
+      .map(([id,sc])=>({
+        match_id: parseInt(id),
+        home_score: sc.h,
+        away_score: sc.a
+      }));
     if(rows.length){
       await fetch(`${SB_URL}/rest/v1/scores`, {
         method:  'POST',
@@ -1898,6 +1900,11 @@ async function saveOnePart(p){
 
 // ── Save single score (faster) ──
 async function saveOneScore(matchId, h, a){
+  // No sobreescribir si el score está bloqueado en BD
+  if(scores[matchId]?.locked){
+    console.warn(`Score match ${matchId} está bloqueado — no se sobreescribe`);
+    return;
+  }
   try{
     await fetch(`${SB_URL}/rest/v1/scores`, {
       method:  'POST',
@@ -2399,7 +2406,8 @@ function resolveKnockout(){
 function calcPts(p){
   let pts=0,exact=0,correct=0;
   const preds=p.preds||{};
-  MATCHES.filter(m=>m.group).forEach(m=>{
+  // Incluye grupos Y todos los partidos knockout con resultado
+  MATCHES.forEach(m=>{
     const sc=scores[m.id];
     if(!sc||sc.h==null) return;
     const pr=preds[m.id];
