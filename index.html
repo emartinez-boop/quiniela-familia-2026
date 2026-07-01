@@ -1401,7 +1401,7 @@ function buildMatches(){
     //         D=USA,PRY,AUS,TUR  E=GER,CUW,CIV,ECU  F=NED,JPN,SWE,TUN
     //         G=BEL,EGY,IRN,NZL  H=ESP,CPV,KSA,URU  I=FRA,SEN,IRQ,NOR
     //         J=ARG,ALG,AUT,JOR  K=POR,COD,UZB,COL  L=ENG,CRO,GHA,PAN
-    {stage:'R32',label:'16avos 1', home:'México',         away:'Ecuador',        date:'28 Jun',venue:'Ciudad de México'},
+    {stage:'R32',label:'16avos 1', home:'México',         away:'Ecuador',        date:'30 Jun',venue:'Ciudad de México'},
     {stage:'R32',label:'16avos 2', home:'Alemania',        away:'Paraguay',       date:'29 Jun',venue:'Boston'},
     {stage:'R32',label:'16avos 3', home:'Sudáfrica',       away:'Canadá',         date:'28 Jun',venue:'Los Ángeles'},
     {stage:'R32',label:'16avos 4', home:'Países Bajos',    away:'Marruecos',      date:'30 Jun',venue:'Monterrey'},
@@ -1417,12 +1417,12 @@ function buildMatches(){
     {stage:'R32',label:'16avos 14',home:'Australia',       away:'Egipto',         date:'3 Jul', venue:'Dallas'},
     {stage:'R32',label:'16avos 15',home:'Suiza',           away:'Argelia',        date:'2 Jul', venue:'Vancouver'},
     {stage:'R32',label:'16avos 16',home:'Colombia',        away:'Ghana',          date:'3 Jul', venue:'Kansas City'},
-    {stage:'R16',label:'Octavos 1',home:'Gan.16-1',away:'Gan.16-2',  date:'4 Jul', venue:'Filadelfia'},
+    {stage:'R16',label:'Octavos 1',home:'Gan.16-2',away:'Gan.16-11',  date:'4 Jul', venue:'Filadelfia'},
     {stage:'R16',label:'Octavos 2',home:'Gan.16-3',away:'Gan.16-4',  date:'4 Jul', venue:'Houston'},
-    {stage:'R16',label:'Octavos 3',home:'Gan.16-5',away:'Gan.16-6',  date:'5 Jul', venue:'Nueva York'},
-    {stage:'R16',label:'Octavos 4',home:'Gan.16-7',away:'Gan.16-8',  date:'5 Jul', venue:'Ciudad de México'},
-    {stage:'R16',label:'Octavos 5',home:'Gan.16-9',away:'Gan.16-10', date:'6 Jul', venue:'Dallas'},
-    {stage:'R16',label:'Octavos 6',home:'Gan.16-11',away:'Gan.16-12',date:'6 Jul', venue:'Seattle'},
+    {stage:'R16',label:'Octavos 3',home:'Gan.16-5',away:'Gan.16-6',  date:'6 Jul', venue:'Nueva York'},
+    {stage:'R16',label:'Octavos 4',home:'Gan.16-7',away:'Gan.16-8',  date:'6 Jul', venue:'Ciudad de México'},
+    {stage:'R16',label:'Octavos 5',home:'Gan.16-9',away:'Gan.16-10', date:'5 Jul', venue:'Dallas'},
+    {stage:'R16',label:'Octavos 6',home:'Gan.16-1',away:'Gan.16-12',date:'5 Jul', venue:'Seattle'},
     {stage:'R16',label:'Octavos 7',home:'Gan.16-13',away:'Gan.16-14',date:'7 Jul', venue:'Los Ángeles'},
     {stage:'R16',label:'Octavos 8',home:'Gan.16-15',away:'Gan.16-16',date:'7 Jul', venue:'Atlanta'},
     {stage:'QF', label:'Cuartos 1',home:'Gan.Oct-1',away:'Gan.Oct-2', date:'9 Jul', venue:'Filadelfia'},
@@ -4201,10 +4201,10 @@ async function init(){
 const PHASE_LOCKS = {
   grupos: { label:'Fase de Grupos',              lockUTC: new Date(Date.UTC(2026,5,11,5,59)),  icon:'⚽', color:'#D4A017' },
   r32:    { label:'Ronda de 32',                 lockUTC: new Date(Date.UTC(2026,5,28,18,30)), icon:'🔥', color:'#22C55E' },
-  r16:    { label:'Octavos de Final',            lockUTC: new Date(Date.UTC(2026,6,4,22,0)),   icon:'⚡', color:'#3B82F6' },
-  qf:     { label:'Cuartos de Final',            lockUTC: new Date(Date.UTC(2026,6,9,21,0)),   icon:'🏅', color:'#8B5CF6' },
-  sf:     { label:'Semifinales',                 lockUTC: new Date(Date.UTC(2026,6,14,20,0)),  icon:'🌟', color:'#F59E0B' },
-  final:  { label:'Final y 3er Puesto (Dom 19 Jul)',  lockUTC: new Date(Date.UTC(2026,6,18,21,0)),  icon:'🏆', color:'#EF4444' },
+  r16:    { label:'Octavos de Final',            lockUTC: new Date(Date.UTC(2026,6,4,16,0)),   icon:'⚡', color:'#3B82F6' },
+  qf:     { label:'Cuartos de Final',            lockUTC: new Date(Date.UTC(2026,6,9,19,0)),   icon:'🏅', color:'#8B5CF6' },
+  sf:     { label:'Semifinales',                 lockUTC: new Date(Date.UTC(2026,6,14,18,0)),  icon:'🌟', color:'#F59E0B' },
+  final:  { label:'Final y 3er Puesto (Dom 19 Jul)',  lockUTC: new Date(Date.UTC(2026,6,18,20,0)),  icon:'🏆', color:'#EF4444' },
 };
 
 function isPhraseLocked(fase){
