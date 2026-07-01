@@ -2773,17 +2773,22 @@ function renderMatches(){
         // Pending — show time and inline prediction input
         const myUser = currentEmail ? participants.find(p=>p.email===currentEmail) : null;
         const myPred = myUser?.preds?.[m.id];
-        const isLocked = myUser?.predsLocked;
+        // Bloqueo por fase: no usar flag global predsLocked para fases futuras
+        const faseLocked = isPhraseLocked(getFaseFromMatch(m));
 
         let predRow = '';
         if(currentEmail && myUser){
-          if(isLocked && myPred?.h!=null){
+          if(faseLocked && myPred?.h!=null){
             predRow = `<div class="mc-pred-row">
               <span class="mc-pred-label">Tu pred:</span>
               <span class="mc-pred-saved">${myPred.h} – ${myPred.a}</span>
               <span style="font-size:9px;color:var(--green);font-family:'Barlow Condensed',sans-serif;">🔒</span>
             </div>`;
-          } else if(!isLocked){
+          } else if(faseLocked && myPred?.h==null){
+            predRow = `<div class="mc-pred-row">
+              <span class="mc-pred-label" style="color:var(--muted);font-size:9px;">Sin predicción 🔒</span>
+            </div>`;
+          } else if(!faseLocked){
             predRow = `<div class="mc-pred-row">
               <span class="mc-pred-label">Tu pred:</span>
               <input class="mc-pred-inp" type="number" min="0" placeholder="0"
@@ -2844,11 +2849,12 @@ function renderMatches(){
 // Auto-save inline prediction when user changes input
 async function saveInlinePred(matchId){
   const myUser = currentEmail ? participants.find(p=>p.email===currentEmail) : null;
-  if(!myUser || myUser.predsLocked) return;
+  if(!myUser) return;
 
-  // ── Verificar bloqueo de fase ──
+  // ── Verificar bloqueo de fase (único control válido para partidos de eliminación) ──
   const match = MATCHES.find(m=>m.id===matchId);
-  if(match && !canSavePhase(getFaseFromMatch(match))) return;
+  if(!match) return;
+  if(!canSavePhase(getFaseFromMatch(match))){ toast('🔒 Esta fase ya cerró'); return; }
 
   if(!myUser.preds) myUser.preds = {};
 
