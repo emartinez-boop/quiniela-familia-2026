@@ -49,7 +49,7 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,48px);letter-spa
 <body>
 
 <h1>⚽ Predicciones · Familia Martínez</h1>
-<div class="sub">Quiniela Mundial 2026 · Grupos + Dieciseisavos</div>
+<div class="sub">Quiniela Mundial 2026 · Grupos + Eliminatoria</div>
 
 <div class="legend">
   <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Exacto +3</div>
@@ -59,6 +59,8 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,48px);letter-spa
 
 <div class="filters">
   <div class="filt on" onclick="setFilter('all',this)">Todos</div>
+  <div class="filt" onclick="setFilter('QF',this)">🏅 Cuartos</div>
+  <div class="filt" onclick="setFilter('R16',this)">🥈 Octavos</div>
   <div class="filt" onclick="setFilter('R32',this)">⚡ 16avos</div>
   <div class="filt" onclick="setFilter('A',this)">Grupo A</div>
   <div class="filt" onclick="setFilter('B',this)">Grupo B</div>
@@ -173,7 +175,21 @@ const MATCHES = [
   {id:85,group:'R32',home:'Argentina',away:'Cabo Verde',date:'3 Jul',fh:'🇦🇷',fa:'🇨🇻'},
   {id:86,group:'R32',home:'Australia',away:'Egipto',date:'3 Jul',fh:'🇦🇺',fa:'🇪🇬'},
   {id:87,group:'R32',home:'Suiza',away:'Argelia',date:'2 Jul',fh:'🇨🇭',fa:'🇩🇿'},
-  {id:88,group:'R32',home:'Colombia',away:'Ghana',date:'3 Jul',fh:'🇨🇴',fa:'🇬🇭'}
+  {id:88,group:'R32',home:'Colombia',away:'Ghana',date:'3 Jul',fh:'🇨🇴',fa:'🇬🇭'},
+  // Octavos de Final (equipos se resuelven en base a los resultados de 16avos)
+  {id:89,group:'R16',home:'Gan.16-2', away:'Gan.16-11',date:'4 Jul', venue:'Filadelfia'},
+  {id:90,group:'R16',home:'Gan.16-3', away:'Gan.16-4', date:'4 Jul', venue:'Houston'},
+  {id:91,group:'R16',home:'Gan.16-5', away:'Gan.16-6', date:'6 Jul', venue:'Nueva York'},
+  {id:92,group:'R16',home:'Gan.16-7', away:'Gan.16-8', date:'6 Jul', venue:'Ciudad de México'},
+  {id:93,group:'R16',home:'Gan.16-9', away:'Gan.16-10',date:'5 Jul', venue:'Dallas'},
+  {id:94,group:'R16',home:'Gan.16-1', away:'Gan.16-12',date:'5 Jul', venue:'Seattle'},
+  {id:95,group:'R16',home:'Gan.16-13',away:'Gan.16-14',date:'7 Jul', venue:'Los Ángeles'},
+  {id:96,group:'R16',home:'Gan.16-15',away:'Gan.16-16',date:'7 Jul', venue:'Atlanta'},
+  // Cuartos de Final (equipos se resuelven en base a los resultados de octavos)
+  {id:97, group:'QF',home:'Gan.Oct-1',away:'Gan.Oct-2',date:'9 Jul', venue:'Filadelfia'},
+  {id:98, group:'QF',home:'Gan.Oct-3',away:'Gan.Oct-4',date:'10 Jul',venue:'Nueva York'},
+  {id:99, group:'QF',home:'Gan.Oct-5',away:'Gan.Oct-6',date:'11 Jul',venue:'Dallas'},
+  {id:100,group:'QF',home:'Gan.Oct-7',away:'Gan.Oct-8',date:'11 Jul',venue:'Los Ángeles'}
 ];
 
 let SCORES = {};
@@ -181,6 +197,10 @@ let PREDS = {};
 let NAMES = {};
 let activeFilter = 'all';
 let searchQ = '';
+
+// Mapa de bandera por país, construido a partir de los partidos de grupo ya definidos arriba
+const FLAGS = {};
+MATCHES.forEach(m=>{ if(m.fh) FLAGS[m.home]=m.fh; if(m.fa) FLAGS[m.away]=m.fa; });
 
 function getRes(h,a){ return h>a?'H':h<a?'A':'D'; }
 
@@ -198,6 +218,51 @@ function getPtsLabel(cls){
   return '';
 }
 
+// Construye, a partir de SCORES, el nombre del equipo ganador de cada partido de eliminatoria
+function buildKoResults(){
+  const res = {};
+  MATCHES.forEach(m=>{
+    if(m.group==='R16' || m.group==='QF'){
+      const sc = SCORES[m.id];
+      if(!sc || sc.h==null) return;
+      if(sc.h>sc.a) res[m.id] = m._resolvedHome || m.home;
+      else if(sc.h<sc.a) res[m.id] = m._resolvedAway || m.away;
+      else res[m.id] = sc.pen || '(penales)';
+    } else if(m.group==='R32'){
+      const sc = SCORES[m.id];
+      if(!sc || sc.h==null) return;
+      if(sc.h>sc.a) res[m.id] = m.home;
+      else if(sc.h<sc.a) res[m.id] = m.away;
+      else res[m.id] = sc.pen || '(penales)';
+    }
+  });
+  return res;
+}
+
+// Traduce un slot tipo "Gan.16-N" / "Gan.Oct-N" al nombre del equipo ganador, si ya se conoce
+function resolveSlot(slot, koResults){
+  if(!slot || typeof slot!=='string') return null;
+  const ganR32 = slot.match(/^Gan\.16-(\d+)$/);
+  if(ganR32){ const mid = 72+parseInt(ganR32[1]); return koResults[mid]||null; }
+  const ganR16 = slot.match(/^Gan\.Oct-(\d+)$/);
+  if(ganR16){ const mid = 88+parseInt(ganR16[1]); return koResults[mid]||null; }
+  return null;
+}
+
+// Resuelve, en 2 pasadas (16avos→octavos, octavos→cuartos), los nombres de equipo y sus banderas
+function resolveKnockout(){
+  for(let pass=0; pass<2; pass++){
+    const koResults = buildKoResults();
+    MATCHES.forEach(m=>{
+      if(m.group!=='R16' && m.group!=='QF') return;
+      const rh = resolveSlot(m.home, koResults);
+      const ra = resolveSlot(m.away, koResults);
+      if(rh){ m._resolvedHome = rh; }
+      if(ra){ m._resolvedAway = ra; }
+    });
+  }
+}
+
 async function sbFetch(path){
   const r = await fetch(SB_URL + '/rest/v1/' + path, {headers: HDRS});
   const data = await r.json();
@@ -207,8 +272,9 @@ async function sbFetch(path){
 async function loadData(){
   try{
     // Scores
-    const scores = await sbFetch('scores?select=match_id,home_score,away_score');
-    scores.forEach(s => { SCORES[s.match_id] = {h: s.home_score, a: s.away_score}; });
+    const scores = await sbFetch('scores?select=match_id,home_score,away_score,pen_winner');
+    scores.forEach(s => { SCORES[s.match_id] = {h: s.home_score, a: s.away_score, pen: s.pen_winner||null}; });
+    resolveKnockout(); // resuelve nombres de equipo para Octavos y Cuartos
 
     // Participants
     const parts = await sbFetch('participants?select=id,name&registered=not.is.null');
@@ -258,6 +324,8 @@ function render(){
   if(searchQ) matches = matches.filter(m =>
     m.home.toLowerCase().includes(searchQ) ||
     m.away.toLowerCase().includes(searchQ) ||
+    (m._resolvedHome||'').toLowerCase().includes(searchQ) ||
+    (m._resolvedAway||'').toLowerCase().includes(searchQ) ||
     (PREDS[m.id]||[]).some(p => p.name.toLowerCase().includes(searchQ))
   );
 
@@ -269,7 +337,20 @@ function render(){
   container.innerHTML = matches.map(m => {
     const preds = PREDS[m.id] || [];
     const score = SCORES[m.id] != null ? SCORES[m.id] : null;
-    const scoreStr = score ? score.h + ' – ' + score.a + ' 🔒' : 'Pendiente';
+    const scoreStr = score ? score.h + ' – ' + score.a + (score.pen ? ' (pasa '+score.pen+' 🥅)' : '') + ' 🔒' : 'Pendiente';
+
+    const isKO = (m.group==='R16' || m.group==='QF');
+    const homeName = isKO ? (m._resolvedHome || m.home) : m.home;
+    const awayName = isKO ? (m._resolvedAway || m.away) : m.away;
+    const homeFlag = isKO ? (FLAGS[homeName] || '🏳️') : m.fh;
+    const awayFlag = isKO ? (FLAGS[awayName] || '🏳️') : m.fa;
+
+    let metaLabel;
+    if(m.group === 'R32') metaLabel = '⚡ 16avos de Final';
+    else if(m.group === 'R16') metaLabel = '🥈 Octavos de Final';
+    else if(m.group === 'QF') metaLabel = '🏅 Cuartos de Final';
+    else metaLabel = 'Grupo ' + m.group;
+    if(m.venue) metaLabel += ' · ' + m.venue;
 
     const cells = preds.map(p => {
       const cls = getPtsClass(p.h, p.a, score);
@@ -284,8 +365,8 @@ function render(){
     return '<div class="match-block">' +
       '<div class="match-header">' +
         '<div>' +
-          '<div class="match-title">' + m.fh + ' ' + m.home + ' vs ' + m.away + ' ' + m.fa + '</div>' +
-          '<div class="match-meta">' + (m.group === 'R32' ? '⚡ 16avos de Final' : 'Grupo ' + m.group) + ' · ' + m.date + '</div>' +
+          '<div class="match-title">' + homeFlag + ' ' + homeName + ' vs ' + awayName + ' ' + awayFlag + '</div>' +
+          '<div class="match-meta">' + metaLabel + ' · ' + m.date + '</div>' +
         '</div>' +
         '<div class="match-result">' + scoreStr + '</div>' +
       '</div>' +
