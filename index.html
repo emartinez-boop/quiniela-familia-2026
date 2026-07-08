@@ -3178,17 +3178,28 @@ function checkAdminUI(){
 
 // ── ADMIN: PANEL DE RESULTADOS ──────────────────────────
 function adminInitPanel(){
-  // Poblar selector de partidos
   const sel = document.getElementById('admin-match-sel');
-  if(!sel || sel.options.length > 1) return;
-  MATCHES.forEach(m=>{
-    const label = m.group
-      ? `[Grupo ${m.group}] ${m.home} vs ${m.away} · ${m.date}`
-      : `[${m.stage}] ${m.label||''} ${m.home} vs ${m.away} · ${m.date}`;
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = label;
-    sel.appendChild(opt);
+  if(!sel) return;
+  resolveKnockout(); // usa los resultados ya cargados (si los hay) para resolver nombres
+
+  if(sel.options.length <= 1){
+    // Primera vez: crear las opciones (una por partido)
+    MATCHES.forEach(m=>{
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      sel.appendChild(opt);
+    });
+  }
+  // Siempre refresca el TEXTO de cada opción con los nombres ya resueltos hasta el momento
+  // (esto corrige el caso donde el panel se abrió antes de que llegaran los resultados de Supabase)
+  Array.from(sel.options).forEach(opt=>{
+    if(!opt.value) return;
+    const m = MATCHES.find(x=>x.id===parseInt(opt.value));
+    if(!m) return;
+    const h = m.resolvedHome||m.home, a = m.resolvedAway||m.away;
+    opt.textContent = m.group
+      ? `[Grupo ${m.group}] ${h} vs ${a} · ${m.date}`
+      : `[${m.stage}] ${m.label||''} ${h} vs ${a} · ${m.date}`;
   });
   adminLoadScores();
 }
@@ -3199,12 +3210,12 @@ function adminFillMatch(){
   if(!matchId) return;
   const m = MATCHES.find(x=>x.id===matchId);
   if(!m) return;
-  document.getElementById('admin-home-lbl').textContent = m.home;
-  document.getElementById('admin-away-lbl').textContent = m.away;
+  document.getElementById('admin-home-lbl').textContent = m.resolvedHome||m.home;
+  document.getElementById('admin-away-lbl').textContent = m.resolvedAway||m.away;
   // Si ya hay resultado guardado, lo muestra
   const existing = scores[matchId];
-  document.getElementById('admin-home-score').value = existing!=null ? existing.home : '';
-  document.getElementById('admin-away-score').value = existing!=null ? existing.away : '';
+  document.getElementById('admin-home-score').value = existing!=null ? existing.h : '';
+  document.getElementById('admin-away-score').value = existing!=null ? existing.a : '';
 
   // Poblar selector de ganador por penales con los equipos de este partido
   const penSel = document.getElementById('admin-pen-winner');
@@ -3287,10 +3298,11 @@ async function adminLoadScores(){
     const res = await fetch(`${SB_URL}/rest/v1/scores?select=*&order=match_id.asc`, {headers: SB_HDRS});
     const data = await res.json();
     if(!data.length){ container.textContent='Sin resultados guardados aún.'; return; }
+    resolveKnockout(); // asegura que m.resolvedHome/resolvedAway estén al día antes de armar la lista
     let html = '<div style="display:flex;flex-direction:column;gap:6px;">';
     data.forEach(s=>{
       const m = MATCHES.find(x=>x.id===s.match_id);
-      const label = m ? `${m.home} vs ${m.away}` : `Partido #${s.match_id}`;
+      const label = m ? `${m.resolvedHome||m.home} vs ${m.resolvedAway||m.away}` : `Partido #${s.match_id}`;
       const penTag = s.pen_winner ? `<div style="font-size:10px;color:var(--gold);letter-spacing:.5px;">🥅 Pasa ${s.pen_winner} por penales</div>` : '';
       html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--s3);border-radius:var(--r);border:1px solid var(--brd);">
         <span style="color:var(--txt)">${label}${penTag}</span>
@@ -4113,6 +4125,7 @@ async function init(){
 
   await loadScores();
   await loadParts();
+  checkAdminUI(); // refresca el panel admin (nombres de equipos resueltos) ahora que ya cargaron los resultados
   refreshPts();
   renderCarousel();
   renderDayStrip();
@@ -4147,6 +4160,7 @@ async function init(){
     renderGroups();
     renderBracket();
     updateStats();
+    checkAdminUI(); // mantiene el panel admin (nombres resueltos) al día con cada actualización en vivo
     setSyncing(false);
   }
 
