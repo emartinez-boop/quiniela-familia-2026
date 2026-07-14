@@ -59,6 +59,9 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,48px);letter-spa
 
 <div class="filters">
   <div class="filt on" onclick="setFilter('all',this)">Todos</div>
+  <div class="filt" onclick="setFilter('FIN',this)">🏆 Final</div>
+  <div class="filt" onclick="setFilter('3RD',this)">🥉 3er Lugar</div>
+  <div class="filt" onclick="setFilter('SF',this)">🌟 Semifinal</div>
   <div class="filt" onclick="setFilter('QF',this)">🏅 Cuartos</div>
   <div class="filt" onclick="setFilter('R16',this)">🥈 Octavos</div>
   <div class="filt" onclick="setFilter('R32',this)">⚡ 16avos</div>
@@ -189,7 +192,12 @@ const MATCHES = [
   {id:97, group:'QF',home:'Gan.Oct-1',away:'Gan.Oct-2',date:'9 Jul', venue:'Filadelfia'},
   {id:98, group:'QF',home:'Gan.Oct-3',away:'Gan.Oct-4',date:'10 Jul',venue:'Nueva York'},
   {id:99, group:'QF',home:'Gan.Oct-5',away:'Gan.Oct-6',date:'11 Jul',venue:'Dallas'},
-  {id:100,group:'QF',home:'Gan.Oct-7',away:'Gan.Oct-8',date:'11 Jul',venue:'Los Ángeles'}
+  {id:100,group:'QF',home:'Gan.Oct-7',away:'Gan.Oct-8',date:'11 Jul',venue:'Los Ángeles'},
+  // Semifinales, Tercer Lugar y Final
+  {id:101,group:'SF', home:'Gan.CF-1',away:'Gan.CF-2',date:'14 Jul',venue:'Atlanta'},
+  {id:102,group:'SF', home:'Gan.CF-3',away:'Gan.CF-4',date:'15 Jul',venue:'Dallas'},
+  {id:103,group:'3RD',home:'Per.SF-1',away:'Per.SF-2',date:'18 Jul',venue:'Miami'},
+  {id:104,group:'FIN',home:'Gan.SF-1',away:'Gan.SF-2',date:'19 Jul',venue:'Nueva Jersey'}
 ];
 
 let SCORES = {};
@@ -219,42 +227,58 @@ function getPtsLabel(cls){
 }
 
 // Construye, a partir de SCORES, el nombre del equipo ganador de cada partido de eliminatoria
+const KO_GROUPS = ['R32','R16','QF','SF','3RD','FIN'];
 function buildKoResults(){
   const res = {};
   MATCHES.forEach(m=>{
-    if(m.group==='R16' || m.group==='QF'){
-      const sc = SCORES[m.id];
-      if(!sc || sc.h==null) return;
-      if(sc.h>sc.a) res[m.id] = m._resolvedHome || m.home;
-      else if(sc.h<sc.a) res[m.id] = m._resolvedAway || m.away;
-      else res[m.id] = sc.pen || '(penales)';
-    } else if(m.group==='R32'){
-      const sc = SCORES[m.id];
-      if(!sc || sc.h==null) return;
-      if(sc.h>sc.a) res[m.id] = m.home;
-      else if(sc.h<sc.a) res[m.id] = m.away;
-      else res[m.id] = sc.pen || '(penales)';
-    }
+    if(!KO_GROUPS.includes(m.group)) return;
+    const sc = SCORES[m.id];
+    if(!sc || sc.h==null) return;
+    const h = m._resolvedHome || m.home, a = m._resolvedAway || m.away;
+    if(sc.h>sc.a) res[m.id] = h;
+    else if(sc.h<sc.a) res[m.id] = a;
+    else res[m.id] = sc.pen || '(penales)';
   });
   return res;
 }
 
-// Traduce un slot tipo "Gan.16-N" / "Gan.Oct-N" al nombre del equipo ganador, si ya se conoce
+// Traduce un slot (Gan.16-N / Gan.Oct-N / Gan.CF-N / Gan.SF-N / Per.SF-N) al nombre del equipo, si ya se conoce
 function resolveSlot(slot, koResults){
   if(!slot || typeof slot!=='string') return null;
+
   const ganR32 = slot.match(/^Gan\.16-(\d+)$/);
   if(ganR32){ const mid = 72+parseInt(ganR32[1]); return koResults[mid]||null; }
+
   const ganR16 = slot.match(/^Gan\.Oct-(\d+)$/);
   if(ganR16){ const mid = 88+parseInt(ganR16[1]); return koResults[mid]||null; }
+
+  const ganQF = slot.match(/^Gan\.CF-(\d+)$/);
+  if(ganQF){ const mid = 96+parseInt(ganQF[1]); return koResults[mid]||null; }
+
+  const ganSF = slot.match(/^Gan\.SF-(\d+)$/);
+  if(ganSF){ const mid = 100+parseInt(ganSF[1]); return koResults[mid]||null; }
+
+  // Perdedor de semifinal (para el partido de 3er lugar)
+  const perSF = slot.match(/^Per\.SF-(\d+)$/);
+  if(perSF){
+    const mid = 100+parseInt(perSF[1]);
+    const winner = koResults[mid];
+    if(!winner) return null;
+    const m = MATCHES.find(x=>x.id===mid);
+    if(!m) return null;
+    const h = m._resolvedHome||m.home, a = m._resolvedAway||m.away;
+    return winner===h ? a : h;
+  }
+
   return null;
 }
 
-// Resuelve, en 2 pasadas (16avos→octavos, octavos→cuartos), los nombres de equipo y sus banderas
+// Resuelve, en varias pasadas (16avos→octavos→cuartos→semis→final/3er lugar), nombres de equipo y banderas
 function resolveKnockout(){
-  for(let pass=0; pass<2; pass++){
+  for(let pass=0; pass<5; pass++){
     const koResults = buildKoResults();
     MATCHES.forEach(m=>{
-      if(m.group!=='R16' && m.group!=='QF') return;
+      if(!KO_GROUPS.includes(m.group) || m.group==='R32') return;
       const rh = resolveSlot(m.home, koResults);
       const ra = resolveSlot(m.away, koResults);
       if(rh){ m._resolvedHome = rh; }
@@ -339,7 +363,7 @@ function render(){
     const score = SCORES[m.id] != null ? SCORES[m.id] : null;
     const scoreStr = score ? score.h + ' – ' + score.a + (score.pen ? ' (pasa '+score.pen+' 🥅)' : '') + ' 🔒' : 'Pendiente';
 
-    const isKO = (m.group==='R16' || m.group==='QF');
+    const isKO = KO_GROUPS.includes(m.group) && m.group!=='R32';
     const homeName = isKO ? (m._resolvedHome || m.home) : m.home;
     const awayName = isKO ? (m._resolvedAway || m.away) : m.away;
     const homeFlag = isKO ? (FLAGS[homeName] || '🏳️') : m.fh;
@@ -349,6 +373,9 @@ function render(){
     if(m.group === 'R32') metaLabel = '⚡ 16avos de Final';
     else if(m.group === 'R16') metaLabel = '🥈 Octavos de Final';
     else if(m.group === 'QF') metaLabel = '🏅 Cuartos de Final';
+    else if(m.group === 'SF') metaLabel = '🌟 Semifinal';
+    else if(m.group === '3RD') metaLabel = '🥉 Tercer Lugar';
+    else if(m.group === 'FIN') metaLabel = '🏆 Gran Final';
     else metaLabel = 'Grupo ' + m.group;
     if(m.venue) metaLabel += ' · ' + m.venue;
 
