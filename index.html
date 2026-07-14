@@ -2379,8 +2379,16 @@ function resolveSlot(slot, koResults){
   // Semifinal winners / losers
   if(slot==='Gan.SF-1') return koResults[101]||null;
   if(slot==='Gan.SF-2') return koResults[102]||null;
-  if(slot==='Per.SF-1') return koResults[101]?('loser:101'):'—';
-  if(slot==='Per.SF-2') return koResults[102]?('loser:102'):'—';
+  if(slot==='Per.SF-1'){
+    const w=koResults[101]; if(!w) return null;
+    const m=MATCHES.find(x=>x.id===101);
+    return (m?.resolvedHome===w ? m?.resolvedAway : m?.resolvedHome) || null;
+  }
+  if(slot==='Per.SF-2'){
+    const w=koResults[102]; if(!w) return null;
+    const m=MATCHES.find(x=>x.id===102);
+    return (m?.resolvedHome===w ? m?.resolvedAway : m?.resolvedHome) || null;
+  }
 
   return null;
 }
