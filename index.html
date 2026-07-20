@@ -2449,7 +2449,7 @@ function calcPts(p){
     if(third&&p.third===third) pts+=3;
   }
   // Bonus for correctly guessing the tournament's top scorer (+4, name match only)
-  if(p.scorer && p.scorer.toLowerCase().startsWith('mbap')) pts+=4;
+  if(p.scorer && p.scorer.toLowerCase().includes('mbap')) pts+=4;
   return{pts,exact,correct};
 }
 function refreshPts(){
